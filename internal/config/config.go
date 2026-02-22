@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"log/slog"
 	"os"
 	"strconv"
@@ -19,8 +20,8 @@ type Config struct{
 
 //we will need function which will help us populate the config struct which will then be used all across our project FROM HERE
 //a constructor function to load all the config variables 
-func Load() *Config{
-	return &Config{
+func Load() (*Config , error){
+	cfg:= &Config{
 		DBURI: getEnvAsString("DB_URI" , ""),
 		DBname: getEnvAsString("DB_NAME",""),
 		Timeout: getEnvDuration("DB_TIMEOUT" , 30*time.Millisecond),
@@ -28,6 +29,12 @@ func Load() *Config{
 		LogLevel: getEnvAsSlogLogLevel("LOG_LEVEL" , slog.LevelInfo),
 		Environment: getEnvAsString("ENV" , "local"),
 	}
+
+	if cfg.DBURI == ""{
+		return nil, fmt.Errorf("DB Connection uri not provided")
+	}
+	
+	return cfg , nil
 }
 //we need to setup a logger and fix this logging method -> no we dont need to , 
 
@@ -36,9 +43,6 @@ func getEnvAsString(key , defaultVal string) string {
 	if value,exists := os.LookupEnv(key); exists{
 		return value
 	} 
-	if defaultVal == ""{
-		
-	}
 	return defaultVal
 }
 

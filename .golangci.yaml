@@ -1,0 +1,9 @@
+linters:
+  default: none
+  enable:
+    - sloglint
+  settings:
+    sloglint:
+      attr-only: true
+
+##this will help prevent !BADKEY occurences in our project
