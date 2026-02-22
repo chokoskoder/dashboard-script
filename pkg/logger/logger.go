@@ -39,8 +39,6 @@ func SetupLogger( level slog.Level, environemt string) *slog.Logger {
 		slog.Float64("go_version" , 1.21),
 	)
 	return logger
-
-
 }
 
 //how do I initialise this config with the data from the original config and is that the way to go about it ?
