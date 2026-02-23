@@ -1,11 +1,47 @@
 package database
 
-import "go.mongodb.org/mongo-driver/mongo"
+import (
+	"context"
+	"fmt"
+	"log/slog"
+
+	"go.mongodb.org/mongo-driver/v2/mongo"
+	"go.mongodb.org/mongo-driver/v2/mongo/options"
+)
 
 //we will connect to the database here and use that conection instance in the repository folder to work with the db
 //connect to mongoDB
 //we setup the mongodb connection uri string in our config file , meaning we will call it here and work with it.
 
-func SetupDBConnection(dbName ,dbUri string ) mongo.Connect {
-	
+type Database struct {
+	client *mongo.Client
+}
+
+func SetupDBConnection(dbUri string,ctx context.Context , logger *slog.Logger ) (*Database , error) {
+
+	serverAPi := options.ServerAPI(options.ServerAPIVersion1)
+	opts := options.Client().ApplyURI(dbUri).SetServerAPIOptions(serverAPi)
+	client , err := mongo.Connect(opts)
+	if err != nil{
+		return nil , fmt.Errorf("error while connecting to db %w" , err)
+	}
+
+	//ping the db
+	if ping_err := client.Ping(ctx , nil); err != nil{
+		return nil,fmt.Errorf("erro while pinging the db: %w" , ping_err)
+	}
+
+	return &Database{
+		client: client,
+	} ,nil
+
+}
+
+//graceful shutdown function 
+// we accept a context here so we can enforce a timeout on the shutdown logic
+func(db *Database ) Close( ctx context.Context) error{
+	if db.client == nil {
+		return nil
+	}
+	return db.client.Disconnect(ctx)
 }
