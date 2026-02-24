@@ -14,6 +14,10 @@ tasks:
     desc: confirm prompt
     cmds:
     - |
+      echo -n 'Are you sure you want to proceed [y/N]' && read ans && [ ${ans:-N} = y]
+    silent : true
+    internal : true
+
 
   run:
     desc: run the cmd/script/main.go
