@@ -1,0 +1,37 @@
+version: '3'
+
+vars:
+  ##cant understand what comes here
+
+tasks:
+  help:
+    desc: print this help message
+    cmds:
+    - task --list-all
+    silent: true ##what does silent mean , everything else makes sense
+
+  confirm:
+    desc: confirm prompt
+    cmds:
+    - |
+
+  run:
+    desc: run the cmd/script/main.go
+    cmds:
+    - go run cmd/script/main.go
+
+
+  migrations:new:
+
+  migrations:up:
+
+
+  tidy:
+    desc: format all go files, and tidy up all the dependencies
+    cmds:
+    - echo 'Formatting go files....'
+    - go fmt ./...
+    - echo 'Tidying go modules....'
+    - go mod tidy
+    - echo 'Verifying dependencies....'
+    - go mod verify
