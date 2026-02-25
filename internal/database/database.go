@@ -17,10 +17,18 @@ type Database struct {
 	client *mongo.Client
 }
 
-func SetupDBConnection(dbUri string,ctx context.Context , logger *slog.Logger ) (*Database , error) {
+func SetupDBConnection(dbUri , environment string, ctx context.Context , logger *slog.Logger ) (*Database , error) {
 
+	//need to add logging here 
 	serverAPi := options.ServerAPI(options.ServerAPIVersion1)
-	opts := options.Client().ApplyURI(dbUri).SetServerAPIOptions(serverAPi)
+	//ok this is weird , why do we need to pass this by address ??
+	bsonOpts := &options.BSONOptions{
+		UseJSONStructTags: true,
+		NilSliceAsEmpty: true,
+		OmitEmpty: true,
+	}//its a struct thats why
+	opts := options.Client().ApplyURI(dbUri).SetServerAPIOptions(serverAPi).SetBSONOptions(bsonOpts)
+
 	client , err := mongo.Connect(opts)
 	if err != nil{
 		return nil , fmt.Errorf("error while connecting to db %w" , err)
