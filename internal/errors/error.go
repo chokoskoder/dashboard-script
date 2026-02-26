@@ -18,22 +18,23 @@ const (
 
 type Severity string
 const (
-
-
+	SeverityFatal    Severity = "FATAL"    // Stop the entire pipeline immediately
+	SeverityWarning  Severity = "WARNING"  // Log and continue (skip this record)
+	SeverityCritical Severity = "CRITICAL" // Retry, then fail if persistent
 )
 
 type ErrorCode string
 const (
-    // System / Infrastructure Errors
-	CodeTransientFailure ErrorCode	= "TRANSIENT_SYSTEM_FAILURE"
-	CodeSourceConn       ErrorCode	= "SOURCE_CONNECTION_FAILED"
-	CodeTargetConn       ErrorCode	= "TARGET_CONNECTION_FAILED"//our source and target is the same bruv what the helly
-    
-    // Data / Logic Errors
-	//CodeDataValidation   ErrorCode	= "DATA_VALIDATION_FAILED" // we dont need a data validation error
-	CodeTargetConstraint ErrorCode	= "TARGET_CONSTRAINT_VIOLATION"
-	//this should be something like today it has been done once and we dont want to repeat even if we end up running the db IDEMPOTENCY
-	CodeFileParse        ErrorCode	= "FILE_PARSING_ERROR"
+	//updating ErrorCodes:
+	CodeDBConn 				ErrorCode = "DB_CONNECTION_FAILED"
+	CodeRecordAlreadyExists ErrorCode = "RECORD_ALREADY_PROCESSED"
+	CodeFileParse			ErrorCode = "FILE_PARSING_ERROR"
+	CodeInternal			ErrorCode = "INTERNAL_SYSTEM_ERROR"
+	//generic errors ? -> there can be no generic errors which we can :
+	//should we enable retries for generic errors ??
+	CodeTransientFailure	ErrorCode = "TRANSIENT_SYSTEM_FAILURE"
+	//what comes under internal ?
+
 )
 
 //ENum for severity , 3 levels -> retry mechanism will be related to this
@@ -63,11 +64,36 @@ func (e *ETLError) Unwrap() error {
 //we need errors for when we cant connect to our source -> this seems similar to the first error why do we need a different one like this ?
 //parsing errors , if we cant parse the files we will not be able to work with them
 
-func NewTargetConstraintError(message string , recordID string , originalErr error) *ETLError {
-	e := &ETLError{}
-	
-	return e
+func NewIdempotencyError(recordID string, originalErr error) *ETLError {
+	return &ETLError{
+		Code:      string(CodeRecordAlreadyExists), // Cast to string if struct expects string
+		Message:   "Record has already been processed",
+		Stage:     StageLoad,       // It usually happens during the Write/Load phase
+		Severity:  SeverityWarning, // WARNING = Don't wake up the engineer, just log it
+		Retryable: false,           // NEVER retry a duplicate, it will fail forever
+		RecordID:  recordID,
+		Err:       originalErr,
+	}
 }
 
+// NewDBConnectionError handles your single DB connection issues
+func NewDBConnectionError(op string, originalErr error) *ETLError {
+	return &ETLError{
+		Code:      string(CodeDBConn),
+		Message:   "Database connection failed during: " + op,
+		Stage:     StageGeneral,    // Could be extract or load
+		Severity:  SeverityFatal,   // If DB is down, stop the script
+		Retryable: true,            // DB might come back up, so we can retry
+		Err:       originalErr,
+	}
+}
 
-//why am I 
+func NewTransientFailure(stage ETLStage , message string , originalErr error) *ETLError{
+	return &ETLError{
+		Code : string(CodeTransientFailure),
+		Message: message,
+		Stage: StageGeneral,
+		Severity: SeverityCritical, //what is the difference in not being able to connect to db and having basic network issues ?? this error is for timeouts , generic errors which can 
+
+	}
+}
