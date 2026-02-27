@@ -1,67 +1,62 @@
 version: '3'
 
 vars:
-  ##cant understand what comes here
+  DB_URI: ''   # You can define global variables here
 
 tasks:
   help:
     desc: print this help message
     cmds:
-    - task --list-all
-    silent: true ##what does silent mean , everything else makes sense
+      - task --list-all
+    silent: true
 
   confirm:
     desc: confirm prompt
     cmds:
-    - |
-      echo -n 'Are you sure you want to proceed [y/N]' && read ans && [ ${ans:-N} = y]
-    silent : true
-    internal : true
-
+      - |
+        echo -n 'Are you sure you want to proceed [y/N] ' && read ans && [ ${ans:-N} = y ]
+    silent: true
+    internal: true
 
   run:
     desc: run the cmd/script/main.go
     cmds:
-    - go run cmd/script/main.go
-
+      - go run cmd/script/main.go
 
   migrations:new:
     desc: create a new migration
     vars:
       NAME: '{{.name | default ""}}'
     cmds:
-    - |
-      if [ -z "{{.NAME}}"]; then
-        echo "Error :Name paramter is required"
-        echo "Usage : task migrations name=migration_name"
-        exit 1
-      fi
-    - echo 'Creating migration file for {{.NAME}}...'
-    - migrate create -ext json -dir ./internal/database/migrations -seq {{.NAME}}
+      - |
+        if [ -z "{{.NAME}}" ]; then
+          echo "Error: Name parameter is required"
+          echo "Usage: task migrations:new name=migration_name"
+          exit 1
+        fi
+      - echo "Creating migration file for {{.NAME}}..."
+      - migrate create -ext json -dir ./internal/database/migrations -seq {{.NAME}}
 
   migrations:up:
     desc: apply all up database migrations
-    deps: [ confirm ]
+    deps: [confirm]
     cmds:
-    - echo 'Running up migrations...'
-    -  migrate -path ./internal/database/migrations -database "{{.DB_URI}}" up
+      - echo "Running up migrations..."
+      - migrate -path ./internal/database/migrations -database "{{.DB_URI}}" up
 
-    migrations:down:
-    desc: apply all down migrations
-    deps : [ comfirm ]
-    cmd:
-    - echo 'Reverting last migration...'
-    #down 1 means go back 1 version , just down destroys everything
-
-    - migrate -path ./internal/database/migrations -database "{{.DB_URI}}" down 1
-
+  migrations:down:
+    desc: apply last down database migration
+    deps: [confirm]
+    cmds:
+      - echo "Reverting last migration..."
+      - migrate -path ./internal/database/migrations -database "{{.DB_URI}}" down 1
 
   tidy:
-    desc: format all go files, and tidy up all the dependencies
+    desc: format all go files and tidy dependencies
     cmds:
-    - echo 'Formatting go files....'
-    - go fmt ./...
-    - echo 'Tidying go modules....'
-    - go mod tidy
-    - echo 'Verifying dependencies....'
-    - go mod verify
+      - echo "Formatting go files..."
+      - go fmt ./...
+      - echo "Tidying go modules..."
+      - go mod tidy
+      - echo "Verifying dependencies..."
+      - go mod verify

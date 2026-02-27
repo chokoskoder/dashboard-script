@@ -11,11 +11,9 @@ import (
 	"github.com/chokoskoder/dashboard-script/internal/config"
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/source/iofs"
-	"go.mongodb.org/mongo-driver/v2/mongo"
-	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
 
-//go:embed migrations/*.json
+//go:embed migrations/*.json 
 var migrations embed.FS
 //this is to cd into the different directories ??
 //what is this ??
