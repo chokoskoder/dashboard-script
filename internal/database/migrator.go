@@ -13,7 +13,7 @@ import (
 	"github.com/golang-migrate/migrate/v4/source/iofs"
 )
 
-//go:embed migrations/*.json 
+//go:embed migrations/*.json
 var migrations embed.FS
 //this is to cd into the different directories ??
 //what is this ??
