@@ -30,19 +30,25 @@ type mongoVaultRepository struct {
 	trancheCollection  *mongo.Collection
 }
 
-// GetStrategies implements VaultRepository.
-}
-
 // Config struct to avoid messy function signatures if params grow
-type MongoConfig struct {
+type VaultConfig struct {
 	DBName             string
 	TVLCollection      string
 	StrategyCollection string
 	TrancheCollection  string
 }
 
+func NewVaultConfig(dbName ,tvlCollection , trancheCollection , strategyCollection string) (*VaultConfig) {
+	return &VaultConfig{
+		DBName: dbName,
+		TVLCollection: tvlCollection,
+		TrancheCollection: trancheCollection,
+		StrategyCollection: strategyCollection,
+	}
+}
+
 // NewMongoVaultRepository creates a single repository that handles vault data.
-func NewMongoVaultRepository(client *mongo.Client, cfg MongoConfig) VaultRepository {
+func NewMongoVaultRepository(client *mongo.Client, cfg VaultConfig) VaultRepository {
 	return &mongoVaultRepository{
 		tvlCollection:      database.CollectionConn(client, cfg.DBName, cfg.TVLCollection),
 		strategyCollection: database.CollectionConn(client, cfg.DBName, cfg.StrategyCollection),
@@ -50,12 +56,10 @@ func NewMongoVaultRepository(client *mongo.Client, cfg MongoConfig) VaultReposit
 	}
 }
 
-// Implementation Example: GetTVL
-func (r *mongoVaultRepository) GetTVL(ctx context.Context, address string) (*model.BerafarmVaultTfv, error) {
-	var result model.BerafarmVaultTfv
 
-	// Example filter - assuming address is the _id or a field
-	filter := map[string]string{"address": address}
+func (r *mongoVaultRepository) GetTVL(ctx context.Context, vaultAddress string) (*model.BerafarmVaultTfv, error) {
+	var result model.BerafarmVaultTfv
+	filter := map[string]string{"trancheVaultAddress": vaultAddress}
 
 	err := r.tvlCollection.FindOne(ctx, filter).Decode(&result)
 	if err != nil {
@@ -67,12 +71,33 @@ func (r *mongoVaultRepository) GetTVL(ctx context.Context, address string) (*mod
 
 	return &result, nil
 }
-func (r *mongoVaultRepository) GetStrategies(ctx context.Context, address string) (*model.BerafarmStrategyBalance, error) {
-	panic("unimplemented")
+
+func (r *mongoVaultRepository) GetStrategies(ctx context.Context, vaultAddress string) (*model.BerafarmStrategyBalance, error) {
+	var result model.BerafarmStrategyBalance
+	filter := map[string]string{"trancheVaultAddress" : vaultAddress}
+	err := r.strategyCollection.FindOne(ctx , filter).Decode(&result)
+	if err != nil {
+		if errors.Is(err , mongo.ErrNoDocuments){
+			return nil , ErrNotFound
+		}
+		return nil ,err
+	}
+
+	return &result, nil
 }
 
 // GetTrancheAllocation implements VaultRepository.
-func (r *mongoVaultRepository) GetTrancheAllocation(ctx context.Context, address string) (*model.BerafarmTrancheData, error) {
-	panic("unimplemented")
+func (r *mongoVaultRepository) GetTrancheAllocation(ctx context.Context, vaultAddress string) (*model.BerafarmTrancheData, error) {
+	var result model.BerafarmTrancheData
+	filter := map[string]string{"trancheVaultAddress" : vaultAddress}
+	err := r.trancheCollection.FindOne(ctx , filter).Decode(&result)
+	if err != nil {
+		if errors.Is(err , mongo.ErrNoDocuments){
+			return nil , ErrNotFound
+		}
+		return nil ,err
+	}
 
+	return &result, nil
+}
 // You would then implement GetStrategies and GetTrancheAllocation similarly...
