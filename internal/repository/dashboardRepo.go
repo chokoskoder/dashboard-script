@@ -3,7 +3,6 @@ package repository
 import (
 	"context"
 	"fmt"
-
 	"github.com/chokoskoder/dashboard-script/internal/database"
 	"github.com/chokoskoder/dashboard-script/internal/model"
 	"go.mongodb.org/mongo-driver/bson"
@@ -45,7 +44,6 @@ func (r *mongoDashboardRepository) GetDashboardData(ctx context.Context) ([]mode
 	// we close the cursor when the function finishes
 	//this cursor is just like what we studied in mysql python in 11th
 	defer cursor.Close(ctx)
-
 	var snapshots []model.DashboardSnapshot
 
 	// cursor.All automatically iterates over all results and decodes them 
