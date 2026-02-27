@@ -31,6 +31,7 @@ func SetupDBConnection(dbUri , environment string, ctx context.Context , logger 
 
 	client , err := mongo.Connect(opts)
 	if err != nil{
+		//add logger here
 		return nil , fmt.Errorf("error while connecting to db %w" , err)
 	}
 

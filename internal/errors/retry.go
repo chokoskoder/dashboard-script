@@ -63,6 +63,4 @@ func RunWithRetry(ctx context.Context , operation func() error) error { //doesnt
 
 	}
 	return fmt.Errorf("operation failed after %d attempts. Last error: %w", DefaultRetryPolicy.MaxRetries, lastErr)
-
-	
 }
