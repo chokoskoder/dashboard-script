@@ -55,6 +55,7 @@ func Migrate(ctx context.Context , logger *slog.Logger , cfg *config.Config , ac
 		migrateErr = m.Steps(-1)
 	default:
 		return fmt.Errorf("unknown migration action: %s", action)
+		
 	}
 
 	if migrateErr != nil {
