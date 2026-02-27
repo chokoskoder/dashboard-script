@@ -54,3 +54,9 @@ func(db *Database ) Close( ctx context.Context) error{
 	}
 	return db.client.Disconnect(ctx)
 }
+
+func CollectionConn(client *mongo.Client , db , collection string) *mongo.Collection {
+	dbConn := client.Database(db)
+	collectionConn := dbConn.Collection(collection)
+	return collectionConn
+}
