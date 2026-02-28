@@ -7,83 +7,82 @@ import (
 )
 
 type WeeklyChange struct {
-	Value     string `bson:"value"`
-	Direction string `bson:"direction"`
+	Value     string `bson:"value" json:"value"`
+	Direction string `bson:"direction" json:"direction"`
 }
 
-type ReturnMetric struct {
-	Value        string       `bson:"value"`
-	Label        string       `bson:"label"`
-	Badge        *string      `bson:"badge,omitempty"`
-	Tooltip      *string      `bson:"tooltip,omitempty"`
-	WeeklyChange WeeklyChange `bson:"weeklyChange"`
+type MetricDetail struct {
+	Value        string        `bson:"value" json:"value"`
+	Label        string        `bson:"label" json:"label"`
+	Badge        string        `bson:"badge,omitempty" json:"badge,omitempty"`
+	Tooltip      string        `bson:"tooltip,omitempty" json:"tooltip,omitempty"`
+	WeeklyChange *WeeklyChange `bson:"weeklyChange,omitempty" json:"weeklyChange,omitempty"`
 }
 
-type CurrentYield struct {
-	Apy       string `bson:"apy"`
-	Apr       string `bson:"apr"`
-	RewardApy string `bson:"rewardApy"`
-	Label     string `bson:"label"`
+type CurrentYieldMetric struct {
+	Apy       string `bson:"apy" json:"apy"`
+	Apr       string `bson:"apr" json:"apr"`
+	RewardApy string `bson:"rewardApy" json:"rewardApy"`
+	Label     string `bson:"label" json:"label"`
 }
 
-type Tvl struct {
-	Value primitive.Decimal128 `bson:"value"`
-	Label string               `bson:"label"`
+type TvlMetric struct {
+	Value float64 `bson:"value" json:"value"`
+	Label string  `bson:"label" json:"label"`
 }
 
-type Metrics struct {
-	NetReturn      ReturnMetric `bson:"netReturn"`
-	AbsoluteReturn ReturnMetric `bson:"absoluteReturn"`
-	CurrentYield   CurrentYield `bson:"currentYield"`
-	Tvl            Tvl          `bson:"tvl"`
+type VaultMetrics struct {
+	NetReturn      MetricDetail       `bson:"netReturn" json:"netReturn"`
+	AbsoluteReturn MetricDetail       `bson:"absoluteReturn" json:"absoluteReturn"`
+	CurrentYield   CurrentYieldMetric `bson:"currentYield" json:"currentYield"`
+	Tvl            TvlMetric          `bson:"tvl" json:"tvl"`
 }
 
-type PerformancePoint struct {
-	Day          string `bson:"day"`
-	Date         string `bson:"date"`
-	DailyGainPct string `bson:"dailyGainPct"`
-	AvgGainPct   string `bson:"avgGainPct"`
-	DailyAPY     string `bson:"dailyAPY"`
-	AvgAPY       string `bson:"avgAPY"`
+type DataPoint struct {
+	Day          string `bson:"day" json:"day"`
+	Date         string `bson:"date" json:"date"`
+	DailyGainPct string `bson:"dailyGainPct" json:"dailyGainPct"`
+	AvgGainPct   string `bson:"avgGainPct" json:"avgGainPct"`
+	DailyAPY     string `bson:"dailyAPY" json:"dailyAPY"`
+	AvgAPY       string `bson:"avgAPY" json:"avgAPY"`
 }
 
-type Summary struct {
-	TotalGainPct string `bson:"totalGainPct"`
-	AvgDailyPct  string `bson:"avgDailyPct"`
-	AvgAPY       string `bson:"avgAPY"`
+type VaultSummary struct {
+	TotalGainPct string `bson:"totalGainPct" json:"totalGainPct"`
+	AvgDailyPct  string `bson:"avgDailyPct" json:"avgDailyPct"`
+	AvgAPY       string `bson:"avgAPY" json:"avgAPY"`
 }
 
-type StrategySnapshot struct {
-	Name       string               `bson:"name"`
-	Allocation primitive.Decimal128 `bson:"allocation"`
-	Status     string               `bson:"status"`
+type StrategyDashboard struct {
+	ID         int     `bson:"id" json:"id"`
+	Name       string  `bson:"name" json:"name"`
+	Allocation float64 `bson:"allocation" json:"allocation"`
+	Status     string  `bson:"status" json:"status"`
 }
 
 type TrancheTier struct {
-	Allocation primitive.Decimal128 `bson:"allocation"`
-	Apy        interface{}          `bson:"apy"`
-	Type       string               `bson:"type"`
+	Allocation float64     `bson:"allocation" json:"allocation"`
+	Apy        interface{} `bson:"apy" json:"apy"` // Schema.Types.Mixed in Mongoose
+	Type       string      `bson:"type" json:"type"`
 }
 
-type Tranches struct {
-	Senior TrancheTier `bson:"senior"`
-	Junior TrancheTier `bson:"junior"`
+type TrancheData struct {
+	Senior TrancheTier `bson:"senior" json:"senior"`
+	Junior TrancheTier `bson:"junior" json:"junior"`
 }
 
 type DashboardSnapshot struct {
-	ID                  primitive.ObjectID   `bson:"_id,omitempty"`
-	VaultName           string               `bson:"vaultName"`
-	TrancheVaultAddress string               `bson:"trancheVaultAddress" validate:"required,len=42"`
-	DisplayName         string               `bson:"displayName"`
-	Description         string               `bson:"description"`
-	Metrics             Metrics              `bson:"metrics"`
-	YieldPerformance    []PerformancePoint   `bson:"yieldPerformance"`
-	RewardPerformance   []PerformancePoint   `bson:"rewardPerformance"`
-	YieldSummary        Summary              `bson:"yieldSummary"`
-	RewardSummary       Summary              `bson:"rewardSummary"`
-	Strategies          []StrategySnapshot   `bson:"strategies"`
-	Tranches            Tranches             `bson:"tranches"`
-	LastComputedAt      time.Time            `bson:"lastComputedAt"`
-	CreatedAt           time.Time            `bson:"createdAt"`
-	UpdatedAt           time.Time            `bson:"updatedAt"`
+	ID                primitive.ObjectID 	`bson:"_id,omitempty" json:"-"`
+	VaultID           string             	`bson:"id" json:"id"` // Maps to Mongoose "id"
+	Name              string             	`bson:"name" json:"name"`
+	Description       string             	`bson:"description,omitempty" json:"description,omitempty"`
+	Metrics           VaultMetrics       	`bson:"metrics" json:"metrics"`
+	YieldPerformance  []DataPoint        	`bson:"yieldPerformance" json:"yieldPerformance"`
+	RewardPerformance []DataPoint        	`bson:"rewardPerformance" json:"rewardPerformance"`
+	YieldSummary      VaultSummary       	`bson:"yieldSummary" json:"yieldSummary"`
+	RewardSummary     VaultSummary       	`bson:"rewardSummary" json:"rewardSummary"`
+	Strategies        []StrategyDashboard	`bson:"strategies" json:"strategies"`
+	Tranches          TrancheData        	`bson:"tranches" json:"tranches"`
+	CreatedAt         time.Time          	`bson:"createdAt" json:"createdAt"`
+	UpdatedAt         time.Time          	`bson:"updatedAt" json:"updatedAt"`
 }
