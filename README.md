@@ -23,3 +23,6 @@
 
 The purpose of this script will be to run every 24 hours at 10:00 IST to update the model _Havent decided on a name yet_ .
 Simply put it is an ETL script
+
+
+was a nice simple project never got into production -> will be updated to a CDC script kinda thingy soon, stay tuned
